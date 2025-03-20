@@ -1,48 +1,78 @@
 import pygame
+import os
 
 pygame.init()
-screen = pygame.display.set_mode((500, 500))
-black = (0, 0, 0)
-screen.fill(black)
-isDone = True
-index = 0  
-sounds = ["sounds/Mockingbird - Eminem.mp3", "sounds/Tez Cadey - Seve Slow.mp3",
-          "sounds/Sweater Weather - The Neighbourhood.mp3"]
-isPaused = False
-isPlayed = True
 
-while isDone:
+
+WIDTH, HEIGHT = 500, 500
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Music Player")
+black = (0, 0, 0)
+white = (255, 255, 255)
+gray = (200, 200, 200)
+
+
+MUSIC_FOLDER = r"C:\Users\Kobylandy\Desktop\New Folder\labs\lab7\sounds"
+
+if not os.path.exists(MUSIC_FOLDER):
+    print(f"Ошибка: Папка '{MUSIC_FOLDER}' не найдена!")
+    exit()
+
+sounds = [os.path.join(MUSIC_FOLDER, f) for f in os.listdir(MUSIC_FOLDER) if f.endswith(".mp3")]
+
+if not sounds:
+    print(f"Ошибка: В папке '{MUSIC_FOLDER}' нет MP3-файлов!")
+    exit()
+
+index = 0  
+isPaused = False
+
+
+pygame.font.init()
+font = pygame.font.Font(None, 36)
+
+
+def draw_button(text, x, y, width, height):
+    rect = pygame.Rect(x, y, width, height)
+    pygame.draw.rect(screen, gray, rect, border_radius=5)
+    text_surface = font.render(text, True, black)
+    screen.blit(text_surface, (x + 10, y + 10))
+    return rect
+
+
+def play_music():
+    global isPaused
+    pygame.mixer.music.load(sounds[index])
+    pygame.mixer.music.play()
+    isPaused = False
+
+running = True
+while running:
+    screen.fill(black)
+    
+    
+    play_btn = draw_button("Play", 50, 400, 100, 50)
+    pause_btn = draw_button("Pause", 200, 400, 100, 50)
+    next_btn = draw_button("Next", 350, 400, 100, 50)
+    prev_btn = draw_button("Previous", 50, 300, 150, 50)
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            isDone = False
-            pygame.quit()
+            running = False
 
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_RIGHT:
-            if index == len(sounds) - 1:
-                index = 0
-            else: index += 1
-
-            isPaused = False
-            isPlayed = True
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_LEFT:
-            if index == 0:
-                index = len(sounds) - 1
-            else:
-                index -= 1
-            isPaused = False
-            isPlayed = True
-
-        if event.type == pygame.KEYDOWN and isPlayed:
-            if isPaused:
-                pygame.mixer.music.unpause()
-                isPaused = not isPaused
-            else:
-                pygame.mixer.music.load(sounds[index])
-                pygame.mixer.music.play(0)
-            isPlayed = not isPlayed
-        elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE and not isPlayed:
-            pygame.mixer.music.pause()
-            isPlayed = not isPlayed
-            isPaused = not isPaused
-
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if play_btn.collidepoint(event.pos):
+                play_music()
+            elif pause_btn.collidepoint(event.pos):
+                pygame.mixer.music.pause()
+                isPaused = True
+            elif next_btn.collidepoint(event.pos):
+                index = (index + 1) % len(sounds)
+                play_music()
+            elif prev_btn.collidepoint(event.pos):
+                index = (index - 1) % len(sounds)
+                play_music()
+    
     pygame.display.flip()
+
+pygame.quit()

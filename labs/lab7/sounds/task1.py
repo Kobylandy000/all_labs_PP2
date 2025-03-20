@@ -1,39 +1,67 @@
 import pygame
-import math
-import time
+import datetime
+
 
 pygame.init()
-screen = pygame.display.set_mode((1400, 1050))
-fon = (255, 255, 255)
-screen.fill(fon)
-img = pygame.image.load("images/mickeyclock.jpeg")
-leftHand = pygame.image.load("images/left.jpg")
-rightHand = pygame.image.load("images/right.jpg")
-# img = pygame.transform.scale(img, (300, 300))
-isDone = True
-
-def rotateHand(image, angle, rad, additional):
-    rotatedImage = pygame.transform.rotate(image, -angle) # rotate image
-    angleInRadian = math.radians(angle - 90)
-    newXCoordinate = rad * math.cos(angleInRadian) + additional[0]
-    newYCoordinate = rad * math.sin(angleInRadian) + additional[1]
-    rotateRect = rotatedImage.get_rect(center=(newXCoordinate, newYCoordinate))
-    screen.blit(rotatedImage, rotateRect)
-
-while isDone:
-    screen.fill(fon)
-    screen.blit(img, (0, 0))
-    screen.blit(leftHand, (500, 320))
-    screen.blit(rightHand, (850, 350))
-    pygame.display.update()
 
 
+CLOCK_PATH = r"C:\Users\Kobylandy\Desktop\New Folder\labs\lab7\images\mickeyclock.jpeg"
+LEFT_ARM_PATH = r"C:\Users\Kobylandy\Desktop\New Folder\labs\lab7\images\leftarm.png"
+RIGHT_ARM_PATH = r"C:\Users\Kobylandy\Desktop\New Folder\labs\lab7\images\rightarm.png"
+
+
+WIDTH, HEIGHT = 450, 400
+WHITE = (255, 255, 255)
+
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Mickey Clock")
+
+
+clock_img = pygame.image.load(CLOCK_PATH)
+left_arm_img = pygame.image.load(LEFT_ARM_PATH)
+right_arm_img = pygame.image.load(RIGHT_ARM_PATH)
+
+
+clock_img = pygame.transform.scale(clock_img, (clock_img.get_width() // 3, clock_img.get_height() // 3))
+left_arm_img = pygame.transform.scale(left_arm_img, (20, left_arm_img.get_height() // 3 - 20))
+right_arm_img = pygame.transform.scale(right_arm_img, (right_arm_img.get_width() // 3, right_arm_img.get_height() // 3))
+
+
+running = True
+while running:
+    
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            isDone = False
-            pygame.quit()
-        elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_TAB:
-                rotateHand(leftHand, 20, 150, (700, 525))
-                pygame.display.update()
-                time.sleep(5)
+            running = False  
+
+    
+    minute = datetime.datetime.now().minute
+    second = datetime.datetime.now().second
+
+    
+    screen.fill(WHITE)
+    screen.blit(clock_img, (0, 0))
+
+    
+    left_arm_angle = second * (-6)    
+    right_arm_angle = minute * (-6)  
+
+    
+    left_rotated = pygame.transform.rotate(left_arm_img, left_arm_angle)
+    left_rect = left_rotated.get_rect(center=(230, 175))
+
+    right_rotated = pygame.transform.rotate(right_arm_img, right_arm_angle)
+    right_rect = right_rotated.get_rect(center=(230, 175))
+
+    
+    screen.blit(left_rotated, left_rect.topleft)
+    screen.blit(right_rotated, right_rect.topleft)
+
+    
+    pygame.display.update()
+    
+    
+    pygame.time.delay(1000 // 60)  
+
+
+pygame.quit()
