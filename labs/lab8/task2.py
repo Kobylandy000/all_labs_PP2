@@ -14,6 +14,7 @@ blue = (0, 0, 255)
 green = (0, 255, 0)
 bg = (138, 140, 168)
 
+
 snake_block = 10  # жыланның және тамақтың 1 клеткасының размеры
 snake_speed = 12
 
@@ -36,6 +37,7 @@ def total_level(level):
 def our_snake(snake_block, snake_list):
     for coordinate in snake_list:
         pygame.draw.rect(screen, black, [coordinate[0], coordinate[1], snake_block, snake_block])
+    
 
 
 def message(text, color):
@@ -69,7 +71,7 @@ def playAgain():
         while game_close:
             screen.fill(red)
             message("YOU LOST! PRESS P-PLAY AGAIN OR Q-QUIT", black)
-            total_score(length_of_snake - 1)
+            total_score(food_counter)
             pygame.display.update()
 
             for event in pygame.event.get():
@@ -79,7 +81,7 @@ def playAgain():
                         playAgain()
                     if event.key == pygame.K_q:
                         game_over = True
-                        game_over = False
+                        game_close = False
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -118,7 +120,7 @@ def playAgain():
                 game_close = True
 
         our_snake(snake_block, snake_list)
-        total_score(length_of_snake - 1)
+        total_score(food_counter)
         total_level(level)
 
         pygame.display.update()
@@ -131,7 +133,7 @@ def playAgain():
             if food_counter % 3 == 0:
                 level += 1
                 snake_speed += 5
-
+        
         clock.tick(snake_speed)
     pygame.quit()
     quit()

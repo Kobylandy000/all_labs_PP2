@@ -95,6 +95,8 @@ sprites.add(enemy)
 sprites.add(coin)
 
 newSpeed = 0.2 + pygame.USEREVENT
+pygame.mixer.music.load(r"C:\Users\Kobylandy\Desktop\New Folder\labs\lab8\sounds\background.wav")
+pygame.mixer.music.play(-1)
 
 isDone = True
 while isDone:
@@ -115,7 +117,7 @@ while isDone:
         sp.move()
 
     if pygame.sprite.spritecollideany(player, coins):
-        
+        pygame.mixer.Sound(r"C:\Users\Kobylandy\Desktop\New Folder\labs\lab8\sounds\coinsound.mp3").play()
         coinCounter += 1
         coordinateOfEnemy = enemy.rect.center
         coordinateOfCoin = random.randint(30, windowWidth - 30)
@@ -128,7 +130,7 @@ while isDone:
                 coin.rect.center = (coordinateOfCoin - 60, 0)
 
     if pygame.sprite.spritecollideany(player, enemies):
-        
+        pygame.mixer.Sound(r"C:\Users\Kobylandy\Desktop\New Folder\labs\lab8\sounds\crash.wav").play()
         time.sleep(1)
         screen.fill(white)
         screen.blit(gameOverText, (windowWidth // 4, windowHeight // 2))

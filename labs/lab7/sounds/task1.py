@@ -26,6 +26,7 @@ clock_img = pygame.transform.scale(clock_img, (clock_img.get_width() // 3, clock
 left_arm_img = pygame.transform.scale(left_arm_img, (20, left_arm_img.get_height() // 3 - 20))
 right_arm_img = pygame.transform.scale(right_arm_img, (right_arm_img.get_width() // 3, right_arm_img.get_height() // 3))
 
+last_minute = -1
 
 running = True
 while running:
@@ -34,9 +35,13 @@ while running:
         if event.type == pygame.QUIT:
             running = False  
 
-    
+    hour = datetime.datetime.now().hour
     minute = datetime.datetime.now().minute
     second = datetime.datetime.now().second
+    
+    if minute != last_minute:
+        pygame.mixer.Sound(r"C:\Users\Kobylandy\Desktop\New Folder\labs\lab8\sounds\coinsound.mp3").play()
+        last_minute = minute
 
     
     screen.fill(WHITE)
@@ -44,16 +49,21 @@ while running:
 
     
     left_arm_angle = second * (-6)    
-    right_arm_angle = minute * (-6)  
+    right_arm_angle = minute * (-6)
+    hour_arm_angle = hour * (-6)  
 
     
+
     left_rotated = pygame.transform.rotate(left_arm_img, left_arm_angle)
     left_rect = left_rotated.get_rect(center=(230, 175))
 
     right_rotated = pygame.transform.rotate(right_arm_img, right_arm_angle)
     right_rect = right_rotated.get_rect(center=(230, 175))
 
-    
+    hour_rotated = pygame.transform.rotate(left_arm_img, hour_arm_angle)
+    hour_rect = hour_rotated.get_rect(center=(230,175))
+
+    screen.blit(hour_rotated, hour_rect.topleft)
     screen.blit(left_rotated, left_rect.topleft)
     screen.blit(right_rotated, right_rect.topleft)
 
