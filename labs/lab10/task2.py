@@ -22,49 +22,46 @@ PURPLE = (128, 0, 128)
 
 # Food types
 FOOD_TYPES = [
-    {"color": RED, "points": 1, "lifetime": 5},    # Apple - lasts 5 sec
-    {"color": YELLOW, "points": 2, "lifetime": 3},  # Banana - lasts 3 sec
-    {"color": PURPLE, "points": 3, "lifetime": 2}   # Grape - lasts 2 sec
+    {"color": RED, "points": 1, "lifetime": 5},
+    {"color": YELLOW, "points": 2, "lifetime": 3},
+    {"color": PURPLE, "points": 3, "lifetime": 2}
 ]
 
 def connect_db():
     conn = psycopg2.connect(
-        dbname="postgres",        # Название базы данных
-        user="postgres",          # Ваш логин (обычно 'postgres')
-        password="Kobylan2007", # Замените на ваш пароль
-        host="localhost",         # Имя хоста или IP-адрес
-        port="5432",              # Порт для PostgreSQL
-        options="-c client_encoding=UTF8"  # Установка кодировки
+        dbname="postgres",
+        user="postgres",
+        password="Kobylan2007",
+        host="localhost",
+        port="5432",
+        options="-c client_encoding=UTF8"
     )
     return conn
 
 def create_tables():
     conn = connect_db()
     cursor = conn.cursor()
-    
-    # Создание таблицы пользователей
+
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS game_user (
+        CREATE TABLE IF NOT EXISTS users (
             id SERIAL PRIMARY KEY,
             username TEXT UNIQUE,
             level INTEGER
         )
     ''')
 
-    # Создание таблицы с результатами
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS user_score (
             id SERIAL PRIMARY KEY,
             user_id INTEGER,
             score INTEGER,
-            FOREIGN KEY (user_id) REFERENCES game_user(id)
+            FOREIGN KEY (user_id) REFERENCES users(id)
         )
     ''')
 
     conn.commit()
     conn.close()
 
-# Создание игровых классов
 class Background:
     def draw(self, surface):
         surface.fill(BG1)
@@ -83,7 +80,7 @@ class Snake:
         self.headY = random.randrange(0, HEIGHT, PIXELS)
         self.bodies = []
         self.state = "STOP"
-    
+
     def move_head(self):
         if self.state == "UP":
             self.headY -= PIXELS
@@ -167,37 +164,32 @@ class Score:
         lbl = self.font.render(f'Score: {self.points}', 1, BLACK)
         surface.blit(lbl, (5, 5))
 
-# Основная функция
 def main():
-    # Создаем таблицы перед запуском игры
     create_tables()
-    
+
     pygame.init()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.display.set_caption("SNAKE")
 
-    # Подключаемся к базе данных и проверяем наличие пользователя
     username = input("Enter your username: ")
 
     conn = connect_db()
     cursor = conn.cursor()
-    
-    # Проверка, существует ли пользователь
-    cursor.execute('SELECT id, level FROM game_user WHERE username = %s', (username,))
+
+    cursor.execute('SELECT id, level FROM users WHERE username = %s', (username,))
     user = cursor.fetchone()
 
     if user:
         print(f"Welcome back, {username}! Current level: {user[1]}")
         user_id = user[0]
     else:
-        cursor.execute('INSERT INTO game_user (username, level) VALUES (%s, %s) RETURNING id', (username, 1))
+        cursor.execute('INSERT INTO users (username, level) VALUES (%s, %s) RETURNING id', (username, 1))
         user_id = cursor.fetchone()[0]
         conn.commit()
         print(f"Welcome, {username}! Your account has been created.")
-    
+
     conn.close()
 
-    # Инициализация игры
     snake = Snake()
     food = Food()
     background = Background()
@@ -224,9 +216,9 @@ def main():
                     snake.state = "RIGHT"
                 elif event.key == pygame.K_LEFT and snake.state != "RIGHT":
                     snake.state = "LEFT"
-                elif event.key == pygame.K_p:  # Pause functionality
+                elif event.key == pygame.K_p:
                     print("Game paused. Press any key to resume.")
-                    pygame.time.wait(5000)  # Just for pause simulation
+                    pygame.time.wait(5000)
                     continue
 
         if collision.between_snake_and_food(snake, food):
@@ -242,13 +234,12 @@ def main():
             snake.move_head()
 
         if collision.between_snake_and_walls(snake) or collision.between_head_and_body(snake):
-            # Сохранение очков в таблице user_score
             conn = connect_db()
-            cursor = conn.cursor()
-            cursor.execute('INSERT INTO user_score (user_id, score) VALUES (%s, %s)', (user_id, score.points))
+            cur = conn.cursor()
+            cur.execute('INSERT INTO user_score (user_id, score) VALUES (%s, %s)', (user_id, score.points))
             conn.commit()
             conn.close()
-            
+
             snake.die()
             score.reset()
             food.spawn()
